@@ -375,6 +375,8 @@ class NotebookRunner(NotebookMixin, Task):
         Notebook parameters. This are passed as the "parameters" argument
         to the papermill.execute_notebook function, by default, "product"
         and "upstream" are included
+    template: str or pathlib.Path, optional
+        Templace source file for "ploomber scaffold"
     executor: str, optional
         executor to use. Currently supports "ploomber-engine" and "papermill".
         Defaults to papermill executor. Can also be passed as "engine_name"
@@ -601,6 +603,7 @@ class NotebookRunner(NotebookMixin, Task):
         dag,
         name=None,
         params=None,
+        template=None,
         executor="papermill",
         executor_params=None,
         papermill_params=None,
@@ -614,6 +617,7 @@ class NotebookRunner(NotebookMixin, Task):
         check_if_kernel_installed=True,
         debug_mode=None,
     ):
+        self.template = template
         self.executor = executor
         self.executor_params = executor_params or {}
         self.papermill_params = papermill_params or {}

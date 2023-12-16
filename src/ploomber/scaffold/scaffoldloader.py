@@ -2,7 +2,7 @@ import ast
 from pathlib import Path
 
 import jupytext
-from jinja2 import Environment, PackageLoader, StrictUndefined
+from jinja2 import Environment, PackageLoader, FileSystemLoader, StrictUndefined, TemplateNotFound
 
 from ploomber import tasks
 from ploomber.util.dotted_path import locate_dotted_path, create_intermediate_modules
@@ -44,7 +44,37 @@ class ScaffoldLoader:
 
         return out
 
-    def create(self, source, params, class_):
+    def render_template(self, template_path, params):
+
+        tmp_env = self.env.overlay(loader=FileSystemLoader(template_path.parent))
+
+        # if requested the ipynb template, we must convert it from the .py file
+        if template_path.suffix == ".ipynb":
+            convert_to = template_path.suffix[1:]
+            name = str(template_path.with_suffix(".py"))
+            is_ipynb = True
+        else:
+            convert_to = None
+            is_ipynb = False
+            name = template_path.name
+
+        try:
+            t = tmp_env.get_template(name)
+        except TemplateNotFound as e:
+            print(
+                'Error: Template "{}" not found. Falling back to default.'.format(str(template_path))
+            )
+            return self.render("task" + template_path.suffix, params=params)
+
+        out = t.render(**params, is_ipynb=is_ipynb)
+
+        if convert_to:
+            nb = jupytext.reads(out, fmt="py:percent")
+            out = jupytext.writes(nb, fmt=convert_to)
+
+        return out
+
+    def create(self, source, template, params, class_):
         """Scaffold a task if they don't exist
 
         Returns
@@ -84,6 +114,7 @@ class ScaffoldLoader:
 
         #  script task...
         else:
+
             path = Path(source)
 
             if not path.exists():
@@ -91,7 +122,11 @@ class ScaffoldLoader:
                     # create parent folders if needed
                     source.parent.mkdir(parents=True, exist_ok=True)
 
-                    content = self.render("task" + source.suffix, params=params)
+                    if template is None:
+                        content = self.render("task" + source.suffix, params=params)
+                    else:
+                        template_path = Path(template)
+                        content = self.render_template(template_path, params=params)
 
                     print("Adding {}...".format(source))
                     source.write_text(content)

@@ -394,3 +394,9 @@ def interact():
 def nb():
     """Manage scripts and notebooks"""
     pass  # pragma: no cover
+
+
+if __name__ == '__main__':
+    import re
+    sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])
+    cmd_router()  # pylint: disable=no-value-for-parameter
