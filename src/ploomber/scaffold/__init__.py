@@ -37,7 +37,7 @@ def add(spec, path_to_spec):
 
     # TODO: raise an error if the location is inside the site-packages folder
 
-    # NOTE: lazy loading freom source loader will giev errors because
+    # NOTE: lazy loading from source loader will give errors because
     # initializing a source with a path only, loses the information from the
     # jinja environment to make macros workj. I have to test this. the best
     # solution is to add a lazy_load param to Placeholder, so it can be
@@ -56,7 +56,9 @@ def add(spec, path_to_spec):
         with add_to_sys_path(path_to_parent, chdir=False):
             for task in spec["tasks"]:
                 did_create = loader.create(
-                    source=task["source"], template=task["template"], params=spec["meta"], class_=task["class"]
+                    source=task["source"],
+                    template=task["template"] if 'template' in task else None,
+                    params=spec["meta"],class_=task["class"]
                 )
                 n += int(did_create)
 

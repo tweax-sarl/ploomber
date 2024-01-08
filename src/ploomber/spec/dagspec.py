@@ -322,7 +322,7 @@ class DAGSpec(MutableMapping):
         # validate keys defined at the top (nested keys are not validated here)
         self._validate_top_keys(self.data, self._path)
 
-        logger.debug("DAGSpec enviroment:\n%s", pp.pformat(env))
+        logger.debug("DAGSpec environment:\n%s", pp.pformat(env))
 
         env = env or dict()
         path_to_defaults = default.path_to_env_from_spec(path_to_spec=self._path)
